@@ -9,6 +9,28 @@ Experimenting with pulling time periods (in the region of 100s of ms) of tweets,
 3. `npm start` to run
 4. Check `output` directory for pulled tweets
 
+## Example output
+
+```sh
+$ node index.js
+
+Wrote 343 tweets (from 19800 predicted IDs) posted in the last 100ms to
+"2019-03-04T01:52:10.666Z_2019-03-04T01:52:10.765Z.json"
+```
+
+In `./output/2019-03-04T01:52:10.666Z_2019-03-04T01:52:10.765Z.json`:
+
+```json
+[
+  {
+    "id": "1102386219227508736",
+    "userId": "2901630699",
+    "text": "@imlactoast Exactly what I needed to see, thanks boo😇"
+  },
+  ... (342 more)
+]
+```
+
 ## TODO
 
 - API key cycling & rate-limit delays based on API response headers, to grab larger periods
