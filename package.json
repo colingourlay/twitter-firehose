@@ -1,0 +1,19 @@
+{
+  "name": "twitter-firehose",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "node snowflake.test.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^6.2.0",
+    "jsbn": "^1.1.0",
+    "just-range": "^2.1.0",
+    "twit": "^2.2.11",
+    "write-json-file": "^3.1.0"
+  }
+}
