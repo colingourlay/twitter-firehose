@@ -27,7 +27,7 @@ In `./output/2019-03-04T01:52:10.666Z_2019-03-04T01:52:10.765Z.json`:
     "userId": "2901630699",
     "text": "@imlactoast Exactly what I needed to see, thanks boo😇"
   },
-  ... (342 more)
+  …
 ]
 ```
 
