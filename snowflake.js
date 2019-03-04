@@ -38,7 +38,7 @@ const DEFAULT_SEQUENCE_IDS = [0, 1, 2, 6, 5, 3, 7, 4, 8, 10];
 `
 Analysis of Tweet Worker IDs
 ==============================
-M   | Tweet % | Cumulative %
+W   | Tweet % | Cumulative %
 332 | 0.09057 | 0.09057
 335 | 0.05927 | 0.14984
 361 | 0.05724 | 0.20707
