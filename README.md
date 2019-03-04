@@ -1,6 +1,6 @@
 # twitter-firehose
 
-Experimenting with pulling time periods (in the region of 100s of ms) of tweets, using [Jason Baungartner's tweet ID prediction efforts](https://docs.google.com/document/d/1xVrPoNutyqTdQ04DXBEZW4ZW4A5RAQW2he7qIpTmG-M/)
+Experimenting with pulling time periods (in the region of 100s of ms) of tweets, using [Jason Baumgartner's tweet ID prediction efforts](https://docs.google.com/document/d/1xVrPoNutyqTdQ04DXBEZW4ZW4A5RAQW2he7qIpTmG-M/)
 
 ## Usage
 
