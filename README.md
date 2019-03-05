@@ -4,10 +4,11 @@ Experimenting with pulling time periods (in the region of 100s of ms) of tweets,
 
 ## Usage
 
-1. Copy `example.env` to `.env` and add your Twitter API keys.
-2. `npm install` dependencies
-3. `npm start` to run
-4. Check `output` directory for pulled tweets
+1. Copy `config.example.json` to `config.json`
+2. Add your Twitter API keys (multiple apps & users accepted)
+3. `npm install` dependencies
+4. `npm start` to run
+5. Check `output` directory for pulled tweets
 
 ## Example output
 
@@ -33,5 +34,4 @@ In `./output/2019-03-04T01:52:10.666Z_2019-03-04T01:52:10.765Z.json`:
 
 ## TODO
 
-- API key cycling & rate-limit delays based on API response headers, to grab larger periods
-- More config options, to look at any period, rather than last 𝑥ms
+- More config options, to look at any period, rather than most recent 𝑥ms
