@@ -15,21 +15,19 @@ Experimenting with pulling time periods (in the region of 100s of ms) of tweets,
 ```sh
 $ node index.js
 
-Wrote 343 tweets (from 19800 predicted IDs) posted in the last 100ms to
-"2019-03-04T01:52:10.666Z_2019-03-04T01:52:10.765Z.json"
+There are potentially 999800 tweets in this time period
+[========================================] 100% (16090 tweets found)
 ```
 
-In `./output/2019-03-04T01:52:10.666Z_2019-03-04T01:52:10.765Z.json`:
+In `./output/2019-03-05T04:44:57.078Z_2019-03-05T04:45:02.077Z.csv`:
 
-```json
-[
-  {
-    "id": "1102386219227508736",
-    "userId": "2901630699",
-    "text": "@imlactoast Exactly what I needed to see, thanks boo😇"
-  },
-  …
-]
+```csv
+id,snowflake,userId,retweets,likes,quotedId,retweetedId,repliedId,text
+1102792087236308992,1551761097140|10|15|0,606804473,0,0,,,,"Necesito amigos, no me aguanto un día mas encerrada en mi casa😩"
+1102792087030788097,1551761097091|10|15|1,811436701377699840,0,0,,,,i just wanna know why both of my thighs are bruised
+1102792087030792192,1551761097091|10|16|0,1001499676518924288,0,0,,,,何をどうやったらこの画像が生まれて誤植されるねん()
+1102792087446028288,1551761097190|10|16|0,525101830,0,0,,,,#李旺阳#  现在有些人给予死后的李旺阳以很高评价，似乎是期待出现更多的“李旺阳”，
+1102792087269863424,1551761097148|10|15|0,912993238893551616,0,0,,,,俺は今あああ猛烈にいいい勉強したい気分だどおおおおおおん
 ```
 
 ## TODO
