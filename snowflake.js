@@ -1,4 +1,3 @@
-const range = require('just-range');
 const { BigInteger } = require('jsbn');
 
 const CREATION_TIME_EPOCH = new BigInteger('1288834974657');
@@ -49,53 +48,9 @@ const generateId = (creationTime, workerId, sequenceId) =>
     .add(new BigInteger(sequenceId))
     .toString();
 
-const DEFAULT_SEQUENCE_IDS = [0, 1, 2, 6, 5, 3, 7, 4, 8, 10];
-const DEFAULT_WORKER_IDS = [
-  375,
-  382,
-  361,
-  372,
-  364,
-  381,
-  376,
-  365,
-  363,
-  362,
-  350,
-  325,
-  335,
-  333,
-  342,
-  326,
-  327,
-  336,
-  347,
-  332
-];
-
-const generateIdRange = (from, to, workerIds = DEFAULT_WORKER_IDS, sequenceIds = DEFAULT_SEQUENCE_IDS) => {
-  if (typeof from !== 'number') {
-    throw new Error(`'from' must be a Number`);
-  }
-
-  const creationTimes = typeof to === 'number' && to > from ? range(from, to) : [from];
-  const ids = [];
-
-  creationTimes.forEach(creationTime => {
-    workerIds.forEach(workerId => {
-      sequenceIds.forEach(sequenceId => {
-        ids.push(generateId(String(creationTime), String(workerId), String(sequenceId)));
-      });
-    });
-  });
-
-  return ids;
-};
-
 module.exports = {
   CREATION_TIME_EPOCH,
   generateId,
-  generateIdRange,
   getComponents,
   getCreationTime,
   getDataCenterId,

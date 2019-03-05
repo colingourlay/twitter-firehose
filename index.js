@@ -2,12 +2,19 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 const csv = require('fast-csv');
+const range = require('just-range');
 const loadJsonFile = require('load-json-file');
 const makeDir = require('make-dir');
 const ProgressBar = require('progress');
+
 const tokenDealer = require('token-dealer');
 const Twit = require('twit');
-const { generateIdRange, getComponents } = require('./snowflake');
+const { generateId, getComponents } = require('./snowflake');
+
+const SEQUENCE_IDS = [0, 1, 2, 6, 5, 3, 7, 4, 8, 10];
+const WORKER_IDS = [375, 382, 361, 372, 364, 381, 376, 365, 363, 362, 350, 325, 335, 333, 342, 326, 327, 336, 347, 332];
+
+const wait = time => new Promise(resolve => setTimeout(resolve, time));
 
 const chunks = (arr, size) =>
   Array(Math.ceil(arr.length / size))
@@ -113,6 +120,37 @@ const _registerAgents = apps =>
     }, [])
     .map(_registerAgent);
 
+const _generateAndFeedIDs = (from, to, onGroup) =>
+  new Promise(async resolve => {
+    if (typeof from !== 'number') {
+      throw new Error(`'from' must be a Number`);
+    }
+
+    let group = [];
+    let groupCount = 0;
+
+    for (let creationTime = from; creationTime <= to; creationTime++) {
+      for (workerId of WORKER_IDS) {
+        for (sequenceId of SEQUENCE_IDS) {
+          group.push(generateId(String(creationTime), String(workerId), String(sequenceId)));
+
+          if (group.length === 100) {
+            onGroup(group);
+            group = [];
+            ++groupCount;
+
+            // Every 100 groups, take a breather
+            if (groupCount % 100 === 0) {
+              await wait(1000);
+            }
+          }
+        }
+      }
+    }
+
+    resolve();
+  });
+
 (async () => {
   let config;
 
@@ -128,37 +166,36 @@ const _registerAgents = apps =>
   const tokens = _registerAgents(config.apps);
   const to = Date.now();
   const from = to - config.time.recentMS + 1;
-  const ids = generateIdRange(from, to);
-  const groups = chunks(ids, 100);
+  const numTweetsToGenerate = (to - from) * WORKER_IDS.length * SEQUENCE_IDS.length;
 
   const outputFilename = `${new Date(from).toISOString()}_${new Date(to).toISOString()}.csv`;
   const outputPath = await makeDir(path.join(__dirname, 'output'));
   const csvStream = csv.createWriteStream({ headers: true });
 
-  csvStream.pipe(fs.createWriteStream(path.join(outputPath, outputFilename), { flags: 'a' }));
+  console.log(`Checking ${numTweetsToGenerate} potential IDs to fetch ${config.time.recentMS}ms of tweets...`);
 
-  console.log(`There are potentially ${ids.length} tweets in this time period`);
-
-  const bar = new ProgressBar('[:bar] :percent (:tweets tweets found)', {
+  const bar = new ProgressBar('[:bar] :percent (ETA: :etas)', {
     complete: '=',
     incomplete: ' ',
     width: 40,
-    total: groups.length
+    total: Math.ceil(numTweetsToGenerate / 100)
   });
 
-  const batches = chunks(groups, 1000);
+  csvStream.pipe(fs.createWriteStream(path.join(outputPath, outputFilename), { flags: 'a' }));
 
-  for (batch of batches) {
-    await Promise.all(
-      batch.map(ids =>
-        tokenDealer(tokens, (token, exhaust) => _getTweets(ids, csvStream, bar, token, exhaust), {
-          wait: true
-        })
-      )
-    ).catch(err => {
-      /* SWALLOW */
-    });
-  }
+  const tasks = [];
+
+  await _generateAndFeedIDs(from, to, group =>
+    tasks.push(
+      tokenDealer(tokens, (token, exhaust) => _getTweets(group, csvStream, bar, token, exhaust), {
+        wait: true
+      })
+    )
+  );
+
+  await Promise.all(tasks).catch(err => {
+    /* SWALLOW */
+  });
 
   csvStream.end();
 })();

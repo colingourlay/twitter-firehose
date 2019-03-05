@@ -12,11 +12,11 @@ Experimenting with pulling time periods (in the region of 100s of ms) of tweets,
 
 ## Example output
 
-```sh
+```
 $ node index.js
 
-There are potentially 999800 tweets in this time period
-[========================================] 100% (16090 tweets found)
+Checking 11999800 potential IDs to fetch 60000ms of tweets...
+[==                                      ] 5% (ETA: 514.4s)
 ```
 
 In `./output/2019-03-05T04:44:57.078Z_2019-03-05T04:45:02.077Z.csv`:
