@@ -31,7 +31,8 @@ const _tweetTransform = ({
   favorite_count,
   retweeted_status,
   quoted_status_id,
-  in_reply_to_status_id_str
+  in_reply_to_status_id_str,
+  lang
 }) => ({
   id: id_str,
   snowflake: (() => {
@@ -44,7 +45,8 @@ const _tweetTransform = ({
   quotedId: quoted_status_id || null,
   retweetedId: retweeted_status ? retweeted_status.id_str : null,
   repliedId: in_reply_to_status_id_str || null,
-  text: truncated ? truncated : text
+  lang,
+  text: truncated && typeof truncated !== 'boolean' ? truncated : text
 });
 
 let total = 0;
@@ -66,6 +68,7 @@ const _getTweets = (ids, csvStream, bar, token, exhaust) => {
         .filter(x => !x.quotedId) // No quotes
         .filter(x => !x.retweetedId) // No retweets (native)
         // .filter(x => !x.repliedId) // No replies
+        .filter(x => x.lang === 'en') // Only english tweets
         .map(tweet => csvStream.write(tweet));
 
       bar.tick({ tweets: total });
@@ -98,9 +101,11 @@ const checkConfigStructure = config => {
 const _registerAgents = apps =>
   apps
     .reduce((memo, app) => {
-      const { consumer_key, consumer_secret, users } = app;
+      const { consumer_key, consumer_secret, users, skipAppOnly } = app;
 
-      memo.push({ consumer_key, consumer_secret, app_only_auth: true });
+      if (!skipAppOnly) {
+        memo.push({ consumer_key, consumer_secret, app_only_auth: true });
+      }
 
       if (users) {
         users.forEach(user => {
