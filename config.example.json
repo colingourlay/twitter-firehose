@@ -2,12 +2,10 @@
   "time": {
     "recentMS": 100
   },
-  "accounts": [
+  "apps": [
     {
-      "app": {
-        "consumer_key": "",
-        "consumer_secret": ""
-      },
+      "consumer_key": "",
+      "consumer_secret": "",
       "users": [
         {
           "access_token": "",
