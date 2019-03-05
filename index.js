@@ -2,11 +2,9 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 const csv = require('fast-csv');
-const range = require('just-range');
 const loadJsonFile = require('load-json-file');
 const makeDir = require('make-dir');
 const ProgressBar = require('progress');
-
 const tokenDealer = require('token-dealer');
 const Twit = require('twit');
 const { generateId, getComponents } = require('./snowflake');
@@ -15,12 +13,6 @@ const SEQUENCE_IDS = [0, 1, 2, 6, 5, 3, 7, 4, 8, 10];
 const WORKER_IDS = [375, 382, 361, 372, 364, 381, 376, 365, 363, 362, 350, 325, 335, 333, 342, 326, 327, 336, 347, 332];
 
 const wait = time => new Promise(resolve => setTimeout(resolve, time));
-
-const chunks = (arr, size) =>
-  Array(Math.ceil(arr.length / size))
-    .fill()
-    .map((_, index) => index * size)
-    .map(begin => arr.slice(begin, begin + size));
 
 const agents = [];
 
@@ -168,9 +160,11 @@ const _generateAndFeedIDs = (from, to, onGroup) =>
   const from = to - config.time.recentMS + 1;
   const numTweetsToGenerate = (to - from) * WORKER_IDS.length * SEQUENCE_IDS.length;
 
-  const outputFilename = `${new Date(from).toISOString()}_${new Date(to).toISOString()}.csv`;
+  const outputFilename = `${from}_${to}.csv`;
   const outputPath = await makeDir(path.join(__dirname, 'output'));
   const csvStream = csv.createWriteStream({ headers: true });
+
+  csvStream.pipe(fs.createWriteStream(path.join(outputPath, outputFilename), { flags: 'a' }));
 
   console.log(`Checking ${numTweetsToGenerate} potential IDs to fetch ${config.time.recentMS}ms of tweets...`);
 
@@ -180,8 +174,6 @@ const _generateAndFeedIDs = (from, to, onGroup) =>
     width: 40,
     total: Math.ceil(numTweetsToGenerate / 100)
   });
-
-  csvStream.pipe(fs.createWriteStream(path.join(outputPath, outputFilename), { flags: 'a' }));
 
   const tasks = [];
 

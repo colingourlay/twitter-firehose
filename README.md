@@ -19,7 +19,7 @@ Checking 11999800 potential IDs to fetch 60000ms of tweets...
 [==                                      ] 5% (ETA: 514.4s)
 ```
 
-In `./output/2019-03-05T04:44:57.078Z_2019-03-05T04:45:02.077Z.csv`:
+In `./output/1551786669998_1551786729997.csv`:
 
 ```csv
 id,snowflake,userId,retweets,likes,quotedId,retweetedId,repliedId,text
