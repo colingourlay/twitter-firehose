@@ -93,23 +93,25 @@ const _getTweets = (ids, csvStream, updateBar, token, exhaust) => {
 
   return T.get('statuses/lookup', { id: ids.join(','), include_entities: false, trim_user: true })
     .then(async ({ data, resp }) => {
+      if (Array.isArray(data)) {
+        total += data.length;
+
+        data
+          .map(_tweetTransform)
+          .filter(config.tweets.filter)
+          .map(config.tweets.map)
+          .forEach(tweet => csvStream.write(tweet));
+      }
+
+      updateBar(1);
+
       if (+resp.headers['x-rate-limit-remaining'] === 0) {
         exhaust(+resp.headers['x-rate-limit-reset'], true);
       }
-
-      total += data.length;
-
-      data
-        .map(_tweetTransform)
-        .filter(config.tweets.filter)
-        .map(config.tweets.map)
-        .forEach(tweet => csvStream.write(tweet));
-
-      updateBar(1);
     })
     .catch(err => {
       if (+err.statusCode === 429) {
-        exhaust(15 * 60 * 1000, true);
+        exhaust(Date.now() + 15 * 60 * 1000, true);
       }
     });
 };
