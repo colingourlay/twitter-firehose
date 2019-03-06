@@ -2,7 +2,6 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 const csv = require('fast-csv');
-const loadJsonFile = require('load-json-file');
 const makeDir = require('make-dir');
 const ProgressBar = require('progress');
 const tokenDealer = require('token-dealer');
@@ -156,12 +155,12 @@ const _generateAndFeedIDs = (from, to, onGroup) =>
   let config;
 
   try {
-    config = await loadJsonFile(path.join(__dirname, 'config.json'));
+    config = require('./config');
     checkConfigStructure(config);
   } catch (err) {
     console.error(`🚨  Couldn't load config`);
     console.error(err);
-    process.exit();
+    process.exit(1);
   }
 
   const tokens = _registerAgents(config.apps);
