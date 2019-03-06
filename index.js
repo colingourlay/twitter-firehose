@@ -8,6 +8,7 @@ const tokenDealer = require('token-dealer');
 const Twit = require('twit');
 const { generateId, getComponents } = require('./snowflake');
 
+const MAX_CONCURRENT_TASKS = 100;
 const SEQUENCE_IDS = [0, 1, 2, 6, 5, 3, 7, 4, 8, 10];
 const WORKER_IDS = [375, 382, 361, 372, 364, 381, 376, 365, 363, 362, 350, 325, 335, 333, 342, 326, 327, 336, 347, 332];
 
@@ -120,7 +121,7 @@ const _registerAgents = apps =>
     }, [])
     .map(_registerAgent);
 
-const _generateAndFeedIDs = (from, to, onGroup) =>
+const _generateAndFeedIDs = async (from, to, onGroup) =>
   new Promise(async resolve => {
     if (typeof from !== 'number') {
       throw new Error(`'from' must be a Number`);
@@ -135,14 +136,9 @@ const _generateAndFeedIDs = (from, to, onGroup) =>
           group.push(generateId(String(creationTime), String(workerId), String(sequenceId)));
 
           if (group.length === 100) {
-            onGroup(group);
+            await onGroup(group); // Allow pausing
             group = [];
             ++groupCount;
-
-            // Every 100 groups, take a breather
-            if (groupCount % 100 === 0) {
-              await wait(1000);
-            }
           }
         }
       }
@@ -176,36 +172,53 @@ const _generateAndFeedIDs = (from, to, onGroup) =>
 
   console.log(`
 * We have to check ${numTweetsToGenerate} IDs that could have been generated in the ${config.time.recentMS}ms period
-* We can make up to ${estimatedRequestsPerWindow} API requests every 15 minutes with the ${
-    tokens.length
-  } tokens provided
+* The ${tokens.length} tokens provided can make up to ${estimatedRequestsPerWindow} API calls every 15 minutes 
 * Each API call can check 100 IDs, so this process can take between ${Math.floor(
     numTweetsToGenerate / 100 / estimatedRequestsPerWindow
   ) * 15} and ${Math.ceil(numTweetsToGenerate / 100 / estimatedRequestsPerWindow) * 15} minutes
 `);
 
-  const bar = new ProgressBar('Fetching tweets [:bar] :percent (elapsed: :elapseds; eta: :etas)', {
+  const bar = new ProgressBar('Fetching tweets [:bar] :percent  ⏳ :elapseds  ⌛️ :etas', {
     complete: '=',
     incomplete: ' ',
     width: 40,
     total: Math.ceil(numTweetsToGenerate / 100)
   });
 
-  const barRefreshInterval = setInterval(() => bar.tick(0), 250);
+  const barRefreshInterval = setInterval(() => {
+    if (!bar.complete) {
+      bar.tick(0);
+    }
+  }, 500);
 
   const tasks = [];
+  let isWindingDown = false;
 
-  await _generateAndFeedIDs(from, to, group =>
-    tasks.push(
-      tokenDealer(tokens, (token, exhaust) => _getTweets(group, csvStream, bar, token, exhaust), {
-        wait: true
-      })
-    )
-  );
+  await _generateAndFeedIDs(from, to, async group => {
+    // (1.) Pushback
+    while (tasks.length >= MAX_CONCURRENT_TASKS) {
+      await wait(100);
+    }
 
-  await Promise.all(tasks).catch(err => {
-    /* SWALLOW */
+    // 2. Starting
+    const task = tokenDealer(tokens, (token, exhaust) => _getTweets(group, csvStream, bar, token, exhaust), {
+      wait: true
+    }).then(() => {
+      // 4. Clearing
+      if (!isWindingDown) {
+        tasks.splice(tasks.indexOf(task), 1);
+      }
+    });
+
+    // 3. Registering
+    tasks.push(task);
   });
+
+  isWindingDown = true;
+
+  if (tasks.length) {
+    await Promise.all(tasks);
+  }
 
   clearInterval(barRefreshInterval);
 
