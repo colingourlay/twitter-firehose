@@ -3,8 +3,8 @@ module.exports = {
     recentMS: 100
   },
   tweets: {
-    exclude: x => x,
-    transform: x => x
+    filter: x => true,
+    map: x => x
   },
   apps: [
     {

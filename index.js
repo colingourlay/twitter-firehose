@@ -20,8 +20,8 @@ const checkConfigStructure = config => {
   assert(typeof config.time === 'object');
   assert(typeof config.time.recentMS === 'number');
   assert(typeof config.tweets === 'object');
-  assert(typeof config.tweets.exclude === 'function');
-  assert(typeof config.tweets.transform === 'function');
+  assert(typeof config.tweets.filter === 'function');
+  assert(typeof config.tweets.map === 'function');
   assert(Array.isArray(config.apps));
   config.apps.forEach(app => {
     assert(typeof app === 'object');
@@ -101,8 +101,8 @@ const _getTweets = (ids, csvStream, updateBar, token, exhaust) => {
 
       data
         .map(_tweetTransform)
-        .filter(config.tweets.exclude)
-        .map(config.tweets.transform)
+        .filter(config.tweets.filter)
+        .map(config.tweets.map)
         .forEach(tweet => csvStream.write(tweet));
 
       updateBar(1);
