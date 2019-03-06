@@ -98,6 +98,8 @@ const checkConfigStructure = config => {
   });
 };
 
+let estimatedRequestsPerWindow = 0;
+
 const _registerAgents = apps =>
   apps
     .reduce((memo, app) => {
@@ -105,11 +107,13 @@ const _registerAgents = apps =>
 
       if (!skipAppOnly) {
         memo.push({ consumer_key, consumer_secret, app_only_auth: true });
+        estimatedRequestsPerWindow += 300;
       }
 
       if (users) {
         users.forEach(user => {
           memo.push(Object.assign({ consumer_key, consumer_secret }, user));
+          estimatedRequestsPerWindow += 900;
         });
       }
 
@@ -171,14 +175,24 @@ const _generateAndFeedIDs = (from, to, onGroup) =>
 
   csvStream.pipe(fs.createWriteStream(path.join(outputPath, outputFilename), { flags: 'a' }));
 
-  console.log(`Checking ${numTweetsToGenerate} potential IDs to fetch ${config.time.recentMS}ms of tweets...`);
+  console.log(`
+* We have to check ${numTweetsToGenerate} IDs that could have been generated in the ${config.time.recentMS}ms period
+* We can make up to ${estimatedRequestsPerWindow} API requests every 15 minutes with the ${
+    tokens.length
+  } tokens provided
+* Each API call can check 100 IDs, so this process can take between ${Math.floor(
+    numTweetsToGenerate / 100 / estimatedRequestsPerWindow
+  ) * 15} and ${Math.ceil(numTweetsToGenerate / 100 / estimatedRequestsPerWindow) * 15} minutes
+`);
 
-  const bar = new ProgressBar('[:bar] :percent (ETA: :etas)', {
+  const bar = new ProgressBar('Fetching tweets [:bar] :percent (elapsed: :elapseds; eta: :etas)', {
     complete: '=',
     incomplete: ' ',
     width: 40,
     total: Math.ceil(numTweetsToGenerate / 100)
   });
+
+  const barRefreshInterval = setInterval(() => bar.tick(0), 250);
 
   const tasks = [];
 
@@ -193,6 +207,8 @@ const _generateAndFeedIDs = (from, to, onGroup) =>
   await Promise.all(tasks).catch(err => {
     /* SWALLOW */
   });
+
+  clearInterval(barRefreshInterval);
 
   csvStream.end();
 })();
