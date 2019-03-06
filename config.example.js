@@ -1,6 +1,7 @@
 module.exports = {
   time: {
-    recentMS: 100
+    from: Date.now() - 1000,
+    to: Date.now()
   },
   tweets: {
     filter: x => true,

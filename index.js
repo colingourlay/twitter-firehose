@@ -16,9 +16,11 @@ const WORKER_IDS = [375, 382, 361, 372, 364, 381, 376, 365, 363, 362, 350, 325, 
 
 let config;
 
-const checkConfigStructure = config => {
+const validateConfig = config => {
   assert(typeof config.time === 'object');
-  assert(typeof config.time.recentMS === 'number');
+  assert(typeof config.time.from === 'number' || config.time.from instanceof Date);
+  assert(typeof config.time.to === 'number' || config.time.to instanceof Date);
+  assert(+config.time.to >= +config.time.from);
   assert(typeof config.tweets === 'object');
   assert(typeof config.tweets.filter === 'function');
   assert(typeof config.tweets.map === 'function');
@@ -39,7 +41,7 @@ const checkConfigStructure = config => {
 
 try {
   config = require('./config');
-  checkConfigStructure(config);
+  validateConfig(config);
 } catch (err) {
   console.error(`🚨  Couldn't load config`);
   console.error(err);
@@ -141,10 +143,6 @@ const _registerAgents = apps =>
 
 const _generateAndFeedIDs = async (from, to, onGroup) =>
   new Promise(async resolve => {
-    if (typeof from !== 'number') {
-      throw new Error(`'from' must be a Number`);
-    }
-
     let group = [];
     let groupCount = 0;
 
@@ -167,8 +165,9 @@ const _generateAndFeedIDs = async (from, to, onGroup) =>
 
 (async () => {
   const tokens = _registerAgents(config.apps);
-  const to = Date.now();
-  const from = to - config.time.recentMS;
+  const from = +config.time.from;
+  const to = +config.time.to;
+  const period = to - from;
   const numTweetsToGenerate = (to - from) * WORKER_IDS.length * SEQUENCE_IDS.length;
 
   const outputFilename = `${from}_${to}.csv`;
@@ -179,7 +178,7 @@ const _generateAndFeedIDs = async (from, to, onGroup) =>
 
   console.log(`
 * We have to check ${numTweetsToGenerate} IDs that could have been generated in ${
-    config.time.recentMS <= 1000 ? `${config.time.recentMS}ms` : distanceInWordsStrict(from, to)
+    period <= 1000 ? `${periodS}ms` : distanceInWordsStrict(from, to)
   }
 * The ${tokens.length} tokens provided can make up to ${estimatedRequestsPerWindow} API calls every 15 minutes 
 * Each API call can check 100 IDs, so this process can take between ${Math.floor(

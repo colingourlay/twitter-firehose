@@ -12,24 +12,28 @@ Experimenting with pulling time periods (in the region of 100s of ms) of tweets,
 
 ## Example output
 
+Assuming you have 49 API keys in your config, and set the time period to 1 minute...
+
 ```
 $ node index.js
 
-Checking 11999800 potential IDs to fetch 60000ms of tweets...
-[==                                      ] 5% (ETA: 514.4s)
+* We have to check 12000000 IDs that could have been generated in 1 minute
+* The 49 tokens provided can make up to 30300 API calls every 15 minutes
+* Each API call can check 100 IDs, so this process can take between 45 and 60 minutes
+
+Fetching tweets [                    ] 0%  ⏳ 0.0s  ⌛️ 0.0s  🐦 49/49
 ```
 
-In `./output/1551786669998_1551786729997.csv`:
+The progress bar shows:
+
+- ⏳ Time elapsed
+- ⌛️ Estimated time remaining
+- 🐦 Unexpired tokens / Total tokens
+
+Once the process completes, `./output/1551854632523_1551854632524.csv` will contain:
 
 ```csv
 id,snowflake,userId,retweets,likes,quotedId,retweetedId,repliedId,text
-1102792087236308992,1551761097140|10|15|0,606804473,0,0,,,,"Necesito amigos, no me aguanto un día mas encerrada en mi casa😩"
-1102792087030788097,1551761097091|10|15|1,811436701377699840,0,0,,,,i just wanna know why both of my thighs are bruised
-1102792087030792192,1551761097091|10|16|0,1001499676518924288,0,0,,,,何をどうやったらこの画像が生まれて誤植されるねん()
-1102792087446028288,1551761097190|10|16|0,525101830,0,0,,,,#李旺阳#  现在有些人给予死后的李旺阳以很高评价，似乎是期待出现更多的“李旺阳”，
-1102792087269863424,1551761097148|10|15|0,912993238893551616,0,0,,,,俺は今あああ猛烈にいいい勉強したい気分だどおおおおおおん
+1103184403071684608,1551854632524|11|13|0,939465324470169600,0,0,,,1102943432400687107,en,@johnlewis I thought it was pancake day every day in America?
+…
 ```
-
-## TODO
-
-- More config options, to look at any period, rather than most recent 𝑥ms
