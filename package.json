@@ -1,6 +1,7 @@
 {
   "name": "twitter-firehose",
   "version": "1.0.0",
+  "private": true,
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -16,7 +17,7 @@
     "progress": "^2.0.3",
     "token-dealer": "^3.0.0",
     "twit": "^2.2.11",
-    "twitter-snowflake-utils": "^1.0.0",
+    "twitter-snowflake-utils": "^1.0.1",
     "write-json-file": "^3.1.0"
   }
 }
