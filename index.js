@@ -144,7 +144,6 @@ const _registerAgents = apps =>
 const _generateAndFeedIDs = async (from, to, onGroup) =>
   new Promise(async resolve => {
     let group = [];
-    let groupCount = 0;
 
     for (let creationTime = from; creationTime <= to; creationTime++) {
       for (workerId of WORKER_IDS) {
@@ -154,7 +153,6 @@ const _generateAndFeedIDs = async (from, to, onGroup) =>
           if (group.length === 100) {
             await onGroup(group); // Allow pausing
             group = [];
-            ++groupCount;
           }
         }
       }
@@ -169,22 +167,26 @@ const _generateAndFeedIDs = async (from, to, onGroup) =>
   const to = +config.time.to;
   const period = to - from;
   const numTweetsToGenerate = (to - from) * WORKER_IDS.length * SEQUENCE_IDS.length;
-
-  const outputFilename = `${from}_${to}.csv`;
-  const outputPath = await makeDir(path.join(__dirname, 'output'));
-  const csvStream = csv.createWriteStream({ headers: true });
-
-  csvStream.pipe(fs.createWriteStream(path.join(outputPath, outputFilename), { flags: 'a' }));
+  const estimatedTotalTime = Math.ceil(numTweetsToGenerate / 100 / estimatedRequestsPerWindow) * 15 * 60 * 1000;
 
   console.log(`
 * We have to check ${numTweetsToGenerate} IDs that could have been generated in ${
     period <= 1000 ? `${periodS}ms` : distanceInWordsStrict(from, to)
   }
 * The ${tokens.length} tokens provided can make up to ${estimatedRequestsPerWindow} API calls every 15 minutes 
-* Each API call can check 100 IDs, so this process can take between ${Math.floor(
-    numTweetsToGenerate / 100 / estimatedRequestsPerWindow
-  ) * 15} and ${Math.ceil(numTweetsToGenerate / 100 / estimatedRequestsPerWindow) * 15} minutes
+* Each API call can check 100 IDs, so this process can take up to ${distanceInWordsStrict(0, estimatedTotalTime)}
 `);
+
+  if (process.argv.indexOf('-d') > -1) {
+    console.log('This is a dry run. Exiting...');
+    process.exit();
+  }
+
+  const outputFilename = `${from}_${to}.csv`;
+  const outputPath = await makeDir(path.join(__dirname, 'output'));
+  const csvStream = csv.createWriteStream({ headers: true });
+
+  csvStream.pipe(fs.createWriteStream(path.join(outputPath, outputFilename), { flags: 'a' }));
 
   const bar = new ProgressBar('Fetching tweets [:bar] :percent  ⏳ :elapseds  ⌛️ :etas  🐦  :atk/:ttk', {
     complete: '=',
