@@ -11,6 +11,7 @@ const Twit = require('twit');
 const { generateId, getComponents } = require('twitter-snowflake-utils');
 
 const MAX_CONCURRENT_TASKS = 500;
+const WINDOW_SIZE = 15 * 60 * 1000;
 const SEQUENCE_IDS = [0, 1, 2, 6, 5, 3, 7, 4, 8, 10];
 const WORKER_IDS = [375, 382, 361, 372, 364, 381, 376, 365, 363, 362, 350, 325, 335, 333, 342, 326, 327, 336, 347, 332];
 
@@ -113,7 +114,7 @@ const _getTweets = (ids, csvStream, updateBar, token, exhaust) => {
     })
     .catch(err => {
       if (+err.statusCode === 429) {
-        exhaust(Date.now() + 15 * 60 * 1000, true);
+        exhaust(Date.now() + WINDOW_SIZE, true);
       }
     });
 };
@@ -167,13 +168,18 @@ const _generateAndFeedIDs = async (from, to, onGroup) =>
   const to = +config.time.to;
   const period = to - from;
   const numTweetsToGenerate = (to - from) * WORKER_IDS.length * SEQUENCE_IDS.length;
-  const estimatedTotalTime = Math.ceil(numTweetsToGenerate / 100 / estimatedRequestsPerWindow) * 15 * 60 * 1000;
+  const estimatedTotalTime = Math.ceil(numTweetsToGenerate / 100 / estimatedRequestsPerWindow) * WINDOW_SIZE;
 
   console.log(`
 * We have to check ${numTweetsToGenerate} IDs that could have been generated in ${
     period <= 1000 ? `${periodS}ms` : distanceInWordsStrict(from, to)
   }
-* The ${tokens.length} tokens provided can make up to ${estimatedRequestsPerWindow} API calls every 15 minutes 
+* The ${
+    tokens.length
+  } tokens provided can make up to ${estimatedRequestsPerWindow} API calls every ${distanceInWordsStrict(
+    0,
+    WINDOW_SIZE
+  )} 
 * Each API call can check 100 IDs, so this process can take up to ${distanceInWordsStrict(0, estimatedTotalTime)}
 `);
 
