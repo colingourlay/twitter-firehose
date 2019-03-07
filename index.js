@@ -8,7 +8,7 @@ const makeDir = require('make-dir');
 const ProgressBar = require('progress');
 const tokenDealer = require('token-dealer');
 const Twit = require('twit');
-const { generateId, getComponents } = require('./snowflake');
+const { generateId, getComponents } = require('twitter-snowflake-utils');
 
 const MAX_CONCURRENT_TASKS = 500;
 const SEQUENCE_IDS = [0, 1, 2, 6, 5, 3, 7, 4, 8, 10];

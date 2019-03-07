@@ -1,3 +1,5 @@
+Source: "Reconstructing Twitter's Firehose" by Jason Baumgartner
+Link: https://docs.google.com/document/d/1xVrPoNutyqTdQ04DXBEZW4ZW4A5RAQW2he7qIpTmG-M/
 
 Snowflake ID (bytes) Breakdown
 ==============================

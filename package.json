@@ -4,8 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "test": "node snowflake.test.js"
+    "start": "node index.js"
   },
   "author": "",
   "license": "ISC",
@@ -17,6 +16,7 @@
     "progress": "^2.0.3",
     "token-dealer": "^3.0.0",
     "twit": "^2.2.11",
+    "twitter-snowflake-utils": "^1.0.0",
     "write-json-file": "^3.1.0"
   }
 }
