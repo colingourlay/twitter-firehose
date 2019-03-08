@@ -194,6 +194,8 @@ const _generateAndFeedIDs = async (from, to, onGroup) =>
 
   csvStream.pipe(fs.createWriteStream(path.join(outputPath, outputFilename), { flags: 'a' }));
 
+  console.log(`Writing out to output/${outputFilename}\n`);
+
   const bar = new ProgressBar('Fetching tweets [:bar] :percent  ⏳ :elapseds  ⌛️ :etas  🐦  :atk/:ttk', {
     complete: '=',
     incomplete: ' ',
