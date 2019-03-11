@@ -9,7 +9,7 @@ const REPLY_RECIPIENTS_PATTERN = /^(?:@[\w_]+\s)+/;
 * Quotes
 * Replies tree (replies of replies)
 */
-module.exports.reactions = (screenName, id, duration, offset = 0) => {
+module.exports.reactions = (id, duration, offset = 0) => {
   const from = +new Date(+getCreationTime(id) + offset);
 
   const idsToCountRepliesOf = [id]; // do we need to manage memory of this using a trie?
