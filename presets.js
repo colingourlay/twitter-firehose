@@ -1,7 +1,7 @@
 const { getCreationTime } = require('twitter-snowflake-utils');
 
-module.exports.reactions = (screenName, id, duration) => {
-  const from = +new Date(+getCreationTime(id));
+module.exports.reactions = (screenName, id, duration, offset = 0) => {
+  const from = +new Date(+getCreationTime(id) + offset);
 
   return {
     time: {
@@ -11,7 +11,12 @@ module.exports.reactions = (screenName, id, duration) => {
     tweets: {
       filter: x => x.id === id || x.retweetedId === id || x.quotedId === id || x.repliedId === id,
       map: x => {
+        x.isRetweet = null;
+
         if (x.retweetedId) {
+          x.isRetweet = 1;
+          x.likes = null;
+          x.retweets = null;
           x.text = null;
         }
 
@@ -20,6 +25,7 @@ module.exports.reactions = (screenName, id, duration) => {
         }
 
         delete x.lang;
+        delete x.retweetedId;
         delete x.snowflake;
 
         return x;
