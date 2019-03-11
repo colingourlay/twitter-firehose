@@ -9,6 +9,7 @@ const inputPath = path.join(process.cwd(), process.argv[process.argv.indexOf(__f
 const minutes = {};
 
 let originalId;
+let originalPublishTime;
 let totalQuotes = 0;
 let totalReplies = 0;
 let totalRetweets = 0;
@@ -20,17 +21,16 @@ fs.createReadStream(inputPath)
 
     if (!originalId) {
       originalId = id;
+      originalPublishTime = +getCreationTime(id);
 
       return;
     }
 
-    const creationMinute = new Date(+getCreationTime(id));
+    const minutesSincePublication = Math.ceil((+getCreationTime(id) - originalPublishTime) / (60 * 1000));
 
-    creationMinute.setSeconds(0, 0);
-
-    if (!minutes[+creationMinute]) {
-      minutes[+creationMinute] = {
-        creationMinute: creationMinute.toISOString(),
+    if (!minutes[minutesSincePublication]) {
+      minutes[minutesSincePublication] = {
+        minutesSincePublication,
         quotes: 0,
         replies: 0,
         retweets: 0,
@@ -40,7 +40,7 @@ fs.createReadStream(inputPath)
       };
     }
 
-    const data = minutes[+creationMinute];
+    const data = minutes[minutesSincePublication];
 
     if (quotedId) {
       totalQuotes++;
