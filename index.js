@@ -65,6 +65,7 @@ const _tweetTransform = ({
   id_str,
   text,
   truncated,
+  extended_tweet,
   user,
   retweet_count,
   favorite_count,
@@ -85,7 +86,7 @@ const _tweetTransform = ({
   retweetedId: retweeted_status ? retweeted_status.id_str : null,
   repliedId: in_reply_to_status_id_str || null,
   lang,
-  text: truncated && typeof truncated !== 'boolean' ? truncated : text
+  text: truncated ? extended_tweet.full_text : text
 });
 
 let total = 0;
